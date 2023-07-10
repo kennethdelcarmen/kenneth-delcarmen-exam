@@ -24,7 +24,7 @@
 </head>
 <body style="background-color: lightgrey;">
     <div id="app">
-        <div class="p-5 text-white bg-dark" style="background-color: indigo;">
+        <div v-if="loaded" class="p-5 text-white bg-dark" style="background-color: indigo;">
             <div class="w-75 mx-auto">
                 <img v-bind:src="channel['profile_picture']" class="img-thumbnail rounded float-start mx-3" style="width: 150px;">
                 <div class="m-5">
@@ -39,8 +39,9 @@
             
         </div>
 
-        <div class="w-50 mx-auto mt-5">
-            <a v-for="video in channel['videos']" v-bind:href="video['video_link']" target="_blank">
+        <div v-if="loaded" class="w-50 mx-auto mt-5">
+            <h3>{{ 'Showing #' + ((page - 1) * 20 + 1) + ' to #' + (page * 20) + ' videos:'}}</h3>
+            <a v-for="video in channel['videos'].slice((page - 1) * 20, page * 20)" v-bind:href="video['video_link']" target="_blank">
                 <div  class="card m-3">
                     <div class="row g-0">
                         <div class="col-md-4">
@@ -57,6 +58,27 @@
             </a>
             
         </div>
+
+        <div v-if="loaded" class="w-50 mx-auto">
+            <nav aria-label="Page navigation example" class="mx-auto">
+                <ul class="pagination justify-content-center">
+                    <li v-bind:class="page == 1 ? 'page-item disabled' : 'page-item'">
+                        <a class="page-link" href="#" aria-label="Previous" v-on:click="page > 1 ? page-- : changePage(1)">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li v-for="num in Array.from({length: 5}, (_, i) => i + 1)" v-bind:class="page == num ? 'page-item active' : 'page-item'">
+                        <a class="page-link" href="#" v-on:click="changePage(num)">{{ num }}</a>
+                    </li>
+                    <li v-bind:class="page == 5 ? 'page-item disabled' : 'page-item'">
+                        <a class="page-link" href="#" aria-label="Next" v-on:click="page < 5 ? page++ : changePage(5)">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        
 
   
     <!-- Modal -->
@@ -88,8 +110,9 @@
     new Vue({
       el: '#app',
       data: {
-        channel: {},
-        loaded: false
+        channelDetails: {},
+        loaded: false,
+        page: 1,
       },
       methods: {
         handleFileChange(event) {
@@ -110,6 +133,10 @@
             };
 
             reader.readAsText(file);
+        },
+
+        changePage(page_number) {
+            this.page = page_number;
         }
       }
     });
